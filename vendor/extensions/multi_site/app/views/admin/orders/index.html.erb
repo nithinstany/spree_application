@@ -1,0 +1,94 @@
+<% content_for :head do -%>
+  <%= calendar_date_select_includes %>
+<% end -%>
+
+<h1><%= t("listing_orders") %></h1>
+
+<table class="index">
+  <thead>
+    <tr>
+      <th><%= order @search, :by => :created_at,       :as => t("order_date") %></th>
+      <th><%= order @search, :by => :number,           :as => t("order_number") %></th>
+      
+      <th> <%= order @search,:by => :site ,  :as =>  t("site_name") %> </th>
+      <th><%= order @search, :by => :state,            :as => t("status") %></th>
+      <th><%= order @search, :by => :checkout_email,   :as => t("customer") %></th>
+      <th><%= order @search, :by => :total,            :as => t("total") %></th>       
+
+
+    </tr>
+  </thead>
+  <tbody>
+  <% @orders.each do |order| %>
+    <tr>
+      <td><%=order.created_at.to_date%></td>
+      <td><%= link_to order.number, object_url(order) %></td>
+      <td><%= ((order.site.name) if order.site) %></td>
+      <td><%= t(order.state.downcase) %></td>
+      <td><%= order.user.email if order.user %></td>
+      <td><%= number_to_currency order.total %></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+
+  <%= will_paginate(:prev => "&#171; #{t('previous')}", :next => "#{t('next')} &#187;") %>      
+        
+        <%= puts "ppppppppppppppppp::: #{@search.inspect}"%>
+<% content_for :sidebar do %>      
+<div class="box">
+  <h3><%= t(:search) %></h3>
+ <% form_tag('/admin/orders',  :method => :get) do %>
+    <% fields_for @search do |p|%>
+  	
+
+      <label><%= t("date_range") %></label><br />
+      <div class="yui-g date-range-filter">
+        <div class="yui-u sub-field first">
+          <%= p.calendar_date_select :created_at_after %><br />
+          <label class="sub"><%= t("start") %></label>
+        </div>
+        <div class="yui-u sub-field">
+          <%= p.calendar_date_select :created_at_before %><br />
+          <label><%= t("stop") %></label>
+        </div>
+      </div>
+
+      <p><label><%= t("order_number") %></label><br />
+      <%= p.text_field :number, :size=>25 %></p>
+
+      <p><label><%= t("status") %></label><br />
+      <%= p.select :state, Order.state_machines['state'].states.collect {|status| [status.titleize, status]}, {:include_blank => true} %></p>
+
+      
+        <p>
+          <label><%= t("email") %></label><br />
+          <%= p.text_field :user_email_is, :size=>25 %>
+        </p>
+     
+      <p>
+          <label><%= t("first_name") %></label><br />
+            <%= p.text_field :creditcards_address_lower_of_firstname_contains, :size=>25 %>
+        </p>
+        <p>
+          <label><%= t("last_name") %></label><br />
+          <%= p.text_field :creditcards_address_lower_of_lastname_contains, :size=>25 %>
+        </p>
+     
+     
+
+      <p>
+        <label>
+          <%= p.check_box :checkout_complete, {:style => "vertical-align:middle;"}, "1", "" %>
+          <%= t("show_only_complete_orders") %>
+        </label>
+      </p>
+
+      <p><%= button t("search") %></p>
+
+    <% end %>
+ <% end %>
+
+
+</div>
+<% end %>
